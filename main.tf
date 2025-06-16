@@ -268,6 +268,45 @@ resource "azurerm_container_app" "ui" {
         name  = "NODE_ENV"
         value = terraform.workspace == "dev" ? "development" : "production"
       }
+
+      liveness_probe {
+        path                    = "/healthcheck"
+        interval_seconds        = 30
+        initial_delay           = 10
+        timeout                 = 30
+        transport               = "HTTP"
+        port                    = 80
+        failure_count_threshold = 5
+        header {
+          name  = "X-Liveness-Check"
+          value = "true"
+        }
+      }
+
+      readiness_probe {
+        path                    = "/healthcheck"
+        interval_seconds        = 30
+        initial_delay           = 10
+        timeout                 = 30
+        transport               = "HTTP"
+        port                    = 80
+        failure_count_threshold = 5
+        header {
+          name  = "X-Readiness-Check"
+          value = "true"
+        }
+      }
+
+      startup_probe {
+        path      = "/healthcheck"
+        timeout   = 30
+        transport = "HTTP"
+        port      = 80
+        header {
+          name  = "X-Startup-Check"
+          value = "true"
+        }
+      }
     }
   }
 }

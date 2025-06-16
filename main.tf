@@ -193,6 +193,10 @@ resource "azurerm_container_app" "api" {
         transport               = "HTTP"
         port                    = 3000
         failure_count_threshold = 5
+        header {
+          name  = "X-Liveness-Check"
+          value = "true"
+        }
       }
 
       readiness_probe {
@@ -203,6 +207,10 @@ resource "azurerm_container_app" "api" {
         transport               = "HTTP"
         port                    = 3000
         failure_count_threshold = 5
+        header {
+          name  = "X-Readiness-Check"
+          value = "true"
+        }
       }
 
       startup_probe {
@@ -210,6 +218,10 @@ resource "azurerm_container_app" "api" {
         timeout   = 30
         transport = "HTTP"
         port      = 3000
+        header {
+          name  = "X-Startup-Check"
+          value = "true"
+        }
       }
 
       command = ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && node dist/src/main"]

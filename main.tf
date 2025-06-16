@@ -162,11 +162,10 @@ resource "azurerm_container_app" "api" {
     }
   }
 
-
-
   template {
     min_replicas = 1
     max_replicas = 3
+
     container {
       name   = "api"
       image  = "framed1910/bruba-api:${local.container_tag}"
@@ -184,6 +183,33 @@ resource "azurerm_container_app" "api" {
       env {
         name  = "NODE_ENV"
         value = terraform.workspace == "dev" ? "development" : "production"
+      }
+
+      liveness_probe {
+        path                    = "/api/health"
+        interval_seconds        = 30
+        initial_delay           = 10
+        timeout                 = 30
+        transport               = "HTTP"
+        port                    = 3000
+        failure_count_threshold = 5
+      }
+
+      readiness_probe {
+        path                    = "/api/health"
+        interval_seconds        = 30
+        initial_delay           = 10
+        timeout                 = 30
+        transport               = "HTTP"
+        port                    = 3000
+        failure_count_threshold = 5
+      }
+
+      startup_probe {
+        path      = "/api"
+        timeout   = 30
+        transport = "HTTP"
+        port      = 3000
       }
 
       command = ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && node dist/src/main"]
@@ -216,7 +242,7 @@ resource "azurerm_container_app" "ui" {
 
       env {
         name  = "API_URL"
-        value = azurerm_container_app.api.latest_revision_fqdn
+        value = "https://${local.api_domain}/api"
       }
       env {
         name  = "NG_APP_ENV"

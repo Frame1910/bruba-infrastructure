@@ -246,6 +246,8 @@ resource "azurerm_container_app" "ui" {
   }
 
   template {
+    min_replicas = 1
+    max_replicas = 3
     container {
       name   = "ui"
       image  = "framed1910/bruba-ui:${local.container_tag}"

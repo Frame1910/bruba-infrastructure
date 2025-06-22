@@ -41,3 +41,10 @@ variable "cloudflare_zone_id" {
   type        = string
   default     = "4194217e56e6eeef110c667fb20eee18"
 }
+
+variable "api_jwt_secret" {
+  description = "Secret used to sign JWT tokens for API authentication"
+  type        = string
+  sensitive   = true
+
+}

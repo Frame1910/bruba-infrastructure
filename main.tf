@@ -177,51 +177,16 @@ resource "azurerm_container_app" "api" {
         value = local.prisma_connection_string
       }
       env {
+        name  = "JWT_SECRET"
+        value = var.api_jwt_secret
+      }
+      env {
         name  = "PORT"
         value = 3000
       }
       env {
         name  = "NODE_ENV"
         value = terraform.workspace == "dev" ? "development" : "production"
-      }
-
-      liveness_probe {
-        path                    = "/api/health"
-        interval_seconds        = 30
-        initial_delay           = 10
-        timeout                 = 30
-        transport               = "HTTP"
-        port                    = 3000
-        failure_count_threshold = 5
-        header {
-          name  = "X-Liveness-Check"
-          value = "true"
-        }
-      }
-
-      readiness_probe {
-        path                    = "/api/health"
-        interval_seconds        = 30
-        initial_delay           = 10
-        timeout                 = 30
-        transport               = "HTTP"
-        port                    = 3000
-        failure_count_threshold = 5
-        header {
-          name  = "X-Readiness-Check"
-          value = "true"
-        }
-      }
-
-      startup_probe {
-        path      = "/api"
-        timeout   = 30
-        transport = "HTTP"
-        port      = 3000
-        header {
-          name  = "X-Startup-Check"
-          value = "true"
-        }
       }
 
       command = ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && node dist/src/main"]
@@ -269,45 +234,6 @@ resource "azurerm_container_app" "ui" {
       env {
         name  = "NODE_ENV"
         value = terraform.workspace == "dev" ? "development" : "production"
-      }
-
-      liveness_probe {
-        path                    = "/healthcheck"
-        interval_seconds        = 30
-        initial_delay           = 10
-        timeout                 = 30
-        transport               = "HTTP"
-        port                    = 80
-        failure_count_threshold = 5
-        header {
-          name  = "X-Liveness-Check"
-          value = "true"
-        }
-      }
-
-      readiness_probe {
-        path                    = "/healthcheck"
-        interval_seconds        = 30
-        initial_delay           = 10
-        timeout                 = 30
-        transport               = "HTTP"
-        port                    = 80
-        failure_count_threshold = 5
-        header {
-          name  = "X-Readiness-Check"
-          value = "true"
-        }
-      }
-
-      startup_probe {
-        path      = "/healthcheck"
-        timeout   = 30
-        transport = "HTTP"
-        port      = 80
-        header {
-          name  = "X-Startup-Check"
-          value = "true"
-        }
       }
     }
   }

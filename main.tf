@@ -35,6 +35,7 @@ resource "azurerm_federated_identity_credential" "deploy_ui_images" {
   issuer              = "https://token.actions.githubusercontent.com"
   parent_id           = azurerm_user_assigned_identity.github_identity.id
   subject             = "repo:Frame1910/bruba-ui:environment:${terraform.workspace}"
+  depends_on          = [azurerm_user_assigned_identity.github_identity]
 }
 resource "azurerm_federated_identity_credential" "deploy_api_images" {
   name                = "deploy-api-images-${terraform.workspace}"
@@ -43,11 +44,13 @@ resource "azurerm_federated_identity_credential" "deploy_api_images" {
   issuer              = "https://token.actions.githubusercontent.com"
   parent_id           = azurerm_user_assigned_identity.github_identity.id
   subject             = "repo:Frame1910/bruba-api:environment:${terraform.workspace}"
+  depends_on          = [azurerm_user_assigned_identity.github_identity]
 }
 resource "azurerm_role_assignment" "github_actions" {
   principal_id         = azurerm_user_assigned_identity.github_identity.principal_id
   role_definition_name = "Container Apps Contributor"
   scope                = azurerm_resource_group.rg.id
+  depends_on           = [azurerm_user_assigned_identity.github_identity]
 }
 
 resource "azurerm_log_analytics_workspace" "log" {
@@ -81,7 +84,7 @@ resource "azurerm_mssql_database" "db" {
 
   # prevent the possibility of accidental data loss
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
@@ -129,6 +132,8 @@ resource "azurerm_mssql_virtual_network_rule" "db_vnet_rule" {
   name      = "Allow-VNet-${var.app_name}-${terraform.workspace}"
   server_id = azurerm_mssql_server.db_server.id
   subnet_id = azurerm_subnet.subnet.id
+
+  depends_on = [azurerm_subnet.subnet]
 }
 
 resource "azurerm_container_app_environment" "app_environment" {

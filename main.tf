@@ -116,13 +116,13 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.0.0/21"]
   service_endpoints    = ["Microsoft.Sql"]
 
-  delegation {
-    name = "container-app-delegation"
-    service_delegation {
-      name    = "Microsoft.App/environments"
-      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
-    }
-  }
+  # delegation {
+  #   name = "container-app-delegation"
+  #   service_delegation {
+  #     name    = "Microsoft.App/environments"
+  #     actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+  #   }
+  # }
 }
 
 resource "azurerm_mssql_virtual_network_rule" "db_vnet_rule" {
@@ -137,13 +137,13 @@ resource "azurerm_container_app_environment" "app_environment" {
   resource_group_name        = azurerm_resource_group.rg.name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.log.id
 
-  workload_profile {
-    name                  = "Consumption"
-    workload_profile_type = "Consumption"
-  }
+  # workload_profile {
+  #   name                  = "Consumption"
+  #   workload_profile_type = "Consumption"
+  # }
 
-  infrastructure_resource_group_name = "managed-rg-${var.app_name}-${terraform.workspace}"
-  infrastructure_subnet_id           = azurerm_subnet.subnet.id
+  # infrastructure_resource_group_name = "managed-rg-${var.app_name}-${terraform.workspace}"
+  infrastructure_subnet_id = azurerm_subnet.subnet.id
 }
 
 resource "azurerm_container_app" "api" {
